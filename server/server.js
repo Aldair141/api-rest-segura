@@ -4,12 +4,20 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
+const hbs = require('hbs');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set('view engine', 'hbs');
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+
+app.get("/", (request, response) => {
+    response.render("index");
+});
 
 app.get('/usuario', (request, response) => {
     //Desde, hasta, estado, id
