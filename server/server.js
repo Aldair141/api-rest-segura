@@ -1,14 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const hbs = require('hbs');
 const app = express();
 const port = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
 
+const path = require("path");
+
 process.env.SIDE = process.env.SIDE || 'este-es-mi-clave-secreta';
 process.env.CADUCIDAD_TOKEN = 60 * 60 * 60 * 24;
-
-app.set('view engine', 'hbs');
+process.env.CLIENT_ID = process.env.CLIENT_ID || '437983785766-h2efv077r3h9leiok1mver6ajcm8uh6q.apps.googleusercontent.com';
 
 //Configuracion del body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -17,9 +17,7 @@ app.use(bodyParser.json());
 //Configuración global de rutas
 app.use(require('../routes/index'));
 
-app.get("/", (request, response) => {
-    response.render("index");
-});
+app.use(express.static(path.resolve(__dirname, '../public')));
 
 const opciones = {
     useNewUrlParser: true,
