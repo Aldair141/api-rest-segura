@@ -31,9 +31,23 @@ app.get('/usuario', verificaToken, (request, response) => {
                 error: error
             });
         } else {
-            response.json({
-                ok: true,
-                usuarios: data
+            // response.json({
+            //     ok: true,
+            //     usuarios: data
+            // });
+            Usuario.count({ activo: true }, (_err, _Cantidad) => {
+                if (_err) {
+                    return response.status(500).json({
+                        ok: false,
+                        error: _err
+                    });
+                }
+
+                response.json({
+                    ok: true,
+                    usuarios: data,
+                    cantidad: _Cantidad
+                });
             });
         }
     });
