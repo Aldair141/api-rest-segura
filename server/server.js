@@ -1,137 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
-const _ = require('underscore');
-const Usuario = require('../models/usuario');
 const hbs = require('hbs');
-
 const app = express();
 const port = process.env.PORT || 3000;
+const bodyParser = require('body-parser');
+
+process.env.SIDE = process.env.SIDE || 'este-es-mi-clave-secreta';
+process.env.CADUCIDAD_TOKEN = 60 * 60 * 60 * 24;
 
 app.set('view engine', 'hbs');
 
+//Configuracion del body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+//Configuración global de rutas
+app.use(require('../routes/index'));
 
 app.get("/", (request, response) => {
     response.render("index");
-});
-
-app.get('/usuario', (request, response) => {
-    //Desde, hasta, estado, id
-    let desde = request.query.desde || 0;
-    let hasta = request.query.hasta || 5;
-    let estado = request.query.estado || true;
-    let id_usuario = request.query.id || undefined;
-
-    desde = Number(desde);
-    hasta = Number(hasta);
-
-    let criterios = {
-        activo: estado
-    };
-
-    if (id_usuario) {
-        criterios._id = id_usuario;
-    }
-
-    Usuario.find(criterios, 'nombre correo rol').skip(desde).limit(hasta).exec((error, data) => {
-        if (error) {
-            response.status(400).json({
-                ok: false,
-                error: error
-            });
-        } else {
-            response.json({
-                ok: true,
-                usuarios: data
-            });
-        }
-    });
-});
-
-app.post('/usuario', (request, response) => {
-    let body = request.body;
-
-    let usuario = new Usuario({
-        nombre: body.nombre,
-        correo: body.correo,
-        clave: bcrypt.hashSync(body.clave, 10),
-        rol: body.rol,
-        google: body.google,
-        activo: body.activo,
-        img: body.img
-    });
-
-    usuario.save((error, data) => {
-        if (error) {
-            response.status(400).json({
-                ok: false,
-                error: error
-            });
-        } else {
-            response.json({
-                ok: true,
-                usuario: data
-            });
-        }
-    });
-});
-
-app.put('/usuario/:id?', (request, response) => {
-    let id = request.params.id || undefined;
-    let body = _.pick(request.body, ['nombre', 'correo', 'clave']);
-
-    if (id === undefined) {
-        return response.status(400).json({
-            ok: false,
-            error: 'El id de usuario es requerido'
-        });
-    }
-
-    Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, data) => {
-        if (err) {
-            response.status(400).json({
-                ok: false,
-                error: err
-            });
-        } else {
-            response.json({
-                ok: true,
-                usuario: data
-            });
-        }
-    });
-});
-
-app.delete('/usuario/:id?', (request, response) => {
-    let id = request.params.id || undefined;
-    const cambios = {
-        activo: false
-    };
-
-    if (id === undefined) {
-        return response.status(400).json({
-            ok: false,
-            error: 'El id de usuario es requerido'
-        });
-    }
-
-    Usuario.findByIdAndUpdate(id, cambios, { new: true }, (err, data) => {
-        if (err) {
-            response.status(400).json({
-                ok: false,
-                error: err
-            });
-        } else {
-            response.json({
-                ok: true,
-                usuario: data
-            });
-        }
-    });
 });
 
 const opciones = {
