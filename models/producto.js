@@ -38,6 +38,10 @@ let productoSchema = new Schema({
     },
     fechaModifica: {
         type: Date
+    },
+    img: {
+        type: String,
+        default: "no-image.jpg"
     }
 });
 
