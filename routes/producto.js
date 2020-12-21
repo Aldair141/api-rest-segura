@@ -110,6 +110,37 @@ app.get('/producto/:id?', verificaToken, (request, response) => {
         });
 });
 
+app.get('/producto/buscar/:termino', (request, response) => {
+    let termino = request.params.termino;
+    let regExp = new RegExp(termino, 'i');
+
+    const filtro = { nombre: regExp };
+
+    Producto.find(filtro).exec((err, data) => {
+        if (err) {
+            return response.status(500).json({
+                ok: false,
+                error: err
+            });
+        }
+
+        Producto.count(filtro, (_err, _data) => {
+            if (_err) {
+                return response.status(500).json({
+                    ok: false,
+                    error: _err
+                });
+            }
+
+            response.json({
+                ok: true,
+                productos: data,
+                cantidad: _data
+            });
+        });
+    });
+});
+
 app.put('/producto/:id?', [verificaToken, verificaRolUsuario], (request, response) => {
     const id = request.params.id || undefined;
 
