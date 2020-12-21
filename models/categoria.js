@@ -1,18 +1,8 @@
-const { request } = require("express");
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
+const Usuario = mongoose.model('Usuario');
 
 let Schema = mongoose.Schema;
-
-const opciones_string = {
-    required: true,
-    type: String
-};
-
-const opciones_date = {
-    type: Date,
-    required: true
-}
 
 let categoriaSchema = new Schema({
     nombre: {
@@ -20,10 +10,22 @@ let categoriaSchema = new Schema({
         type: String,
         unique: true
     },
-    usuariocrea: opciones_string,
-    fechacrea: opciones_date,
-    usuariomodifica: opciones_string,
-    fechamodifica: opciones_date
+    usuariocrea: {
+        type: Schema.Types.ObjectId,
+        ref: 'Usuario'
+    },
+    fechacrea: {
+        type: Date,
+        required: true
+    },
+    usuariomodifica: {
+        type: Schema.Types.ObjectId,
+        ref: 'Usuario'
+    },
+    fechamodifica: {
+        type: Date,
+        required: true
+    }
 });
 
 mongoose.plugin(uniqueValidator, {

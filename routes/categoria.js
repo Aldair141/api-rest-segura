@@ -1,8 +1,8 @@
 const Categoria = require('../models/categoria');
+const Usuario = require('../models/usuario');
 const bodyParser = require('body-parser');
 const express = require('express');
 const { verificaToken, verificaRolUsuario } = require('../middlewares/autenticacion');
-const _ = require('underscore');
 
 const app = express();
 
@@ -16,9 +16,9 @@ app.post('/categoria', [verificaToken, verificaRolUsuario], (request, response) 
 
     let categoria = new Categoria({
         nombre: body.nombre,
-        usuariocrea: usuario.nombre,
+        usuariocrea: usuario._id,
         fechacrea: new Date(),
-        usuariomodifica: usuario.nombre,
+        usuariomodifica: usuario._id,
         fechamodifica: new Date()
     });
 
@@ -37,27 +37,30 @@ app.post('/categoria', [verificaToken, verificaRolUsuario], (request, response) 
     });
 });
 
-app.get('/categoria', verificaToken, (request, response) => {
-    Categoria.find({}, (err, data) => {
-        if (err) {
-            return response.status(400).json({
-                ok: false,
-                error: err
-            });
-        }
-
-        response.json({
-            ok: true,
-            categorias: data
+app.get("/categoria", verificaToken, (request, response) => {
+    Categoria.find({})
+        .sort('nombre')
+        .populate('usuariocrea usuariomodifica', 'nombre correo', Usuario)
+        .exec((err, data) => {
+            if (err) {
+                response.status(500).json({
+                    ok: false,
+                    error: err
+                });
+            } else {
+                response.json({
+                    ok: true,
+                    categorias: data
+                });
+            }
         });
-    });
 });
 
 app.get('/categoria/:id?', verificaToken, (request, response) => {
     let id = request.params.id || undefined;
 
     if (id === undefined) {
-        return response.status(400).json({
+        return response.status(500).json({
             ok: false,
             error: 'El ID de la categoría es indispensable para realizar la consulta.'
         });
@@ -65,7 +68,7 @@ app.get('/categoria/:id?', verificaToken, (request, response) => {
 
     Categoria.findOne({ _id: id }, (err, data) => {
         if (err) {
-            response.status(400).json({
+            response.status(500).json({
                 ok: false,
                 error: err
             });
@@ -85,21 +88,27 @@ app.get('/categoria/:id?', verificaToken, (request, response) => {
     });
 });
 
-app.put('/categoria/:id?', (request, response) => {
+app.put('/categoria/:id?', [verificaToken, verificaRolUsuario], (request, response) => {
     let id = request.params.id || undefined;
+    let body = request.body;
+    let usuario = request.usuario;
 
     if (id === undefined) {
-        return response.status(400).json({
+        return response.status(500).json({
             ok: false,
             error: 'El ID de la categoría es indispensable para realizar una modificación.'
         });
     }
 
-    const datos = _.pick(request.body, ['nombre']);
+    const datosNuevos = {
+        nombre: body.nombre,
+        usuariomodifica: usuario._id,
+        fechamodifica: new Date()
+    }
 
-    Categoria.findByIdAndUpdate(id, datos, { new: true, runValidators: true }, (err, data) => {
+    Categoria.findByIdAndUpdate(id, datosNuevos, { new: true, runValidators: true, context: 'query' }, (err, data) => {
         if (err) {
-            response.status(400).json({
+            response.status(500).json({
                 ok: false,
                 error: err
             });
@@ -129,10 +138,17 @@ app.delete('/categoria/:id?', [verificaToken, verificaRolUsuario], (request, res
                 error: _err
             })
         } else {
-            response.json({
-                ok: true,
-                usuario: _data
-            });
+            if (!_data) {
+                response.status(400).json({
+                    ok: false,
+                    error: 'Esta categoría no existe.'
+                });
+            } else {
+                response.json({
+                    ok: true,
+                    message: 'Categoría eliminada.'
+                });
+            }
         }
     });
 });
