@@ -58,7 +58,8 @@ app.put('/upload/:tipo/:id', (request, response) => {
         if (err) {
             return response.status(400).json({
                 ok: false,
-                err: err
+                err: err,
+                message: 'El archivo no se pudo subir al servidor'
             });
         }
 
