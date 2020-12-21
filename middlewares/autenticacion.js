@@ -32,7 +32,24 @@ let verificaRolUsuario = (request, response, next) => {
     next();
 };
 
+let verificaTokenImg = (request, response, next) => {
+    let token = request.query.token;
+
+    jwt.verify(token, process.env.SIDE, (err, decoded) => {
+        if (err) {
+            return response.status(401).json({
+                ok: false,
+                error: err
+            });
+        }
+
+        request.usuario = decoded.usuario;
+        next();
+    });
+}
+
 module.exports = {
     verificaToken,
-    verificaRolUsuario
+    verificaRolUsuario,
+    verificaTokenImg
 };
