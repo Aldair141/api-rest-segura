@@ -3,8 +3,10 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
 const { verificaToken, verificaRolUsuario } = require('../middlewares/autenticacion');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 
 app.get('/usuario', verificaToken, (request, response) => {
     //Desde, hasta, estado, id
@@ -53,7 +55,7 @@ app.get('/usuario', verificaToken, (request, response) => {
     });
 });
 
-app.post('/usuario', [verificaToken, verificaRolUsuario], (request, response) => {
+app.post('/usuario', (request, response) => {
     let body = request.body;
 
     let usuario = new Usuario({
