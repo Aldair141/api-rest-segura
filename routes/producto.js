@@ -141,6 +141,42 @@ app.get('/producto/buscar/:termino', (request, response) => {
     });
 });
 
+app.get('/producto/disponible/:nombre', [verificaToken], (request, response) => {
+    let nombre = request.params.nombre || undefined;
+
+    if (nombre === undefined) {
+        return response.status(400).json({
+            ok: false,
+            error: {
+                message: 'No se envió ningun valor.'
+            }
+        });
+    }
+
+    //Buscar el producto por el nombre
+    let regExp = new RegExp(nombre, 'i');
+    Producto.findOne({ nombre: regExp }, (err, data) => {
+        if (err) {
+            return response.status(500).json({
+                ok: false,
+                error: err
+            });
+        }
+
+        if (!data) {
+            return response.json({
+                ok: true,
+                disponible: true
+            });
+        } else {
+            return response.json({
+                ok: true,
+                disponible: false
+            });
+        }
+    });
+});
+
 app.put('/producto/:id?', [verificaToken, verificaRolUsuario], (request, response) => {
     const id = request.params.id || undefined;
 

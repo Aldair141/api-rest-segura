@@ -39,7 +39,7 @@ app.post('/categoria', [verificaToken, verificaRolUsuario], (request, response) 
 
 app.get("/categoria", verificaToken, (request, response) => {
     Categoria.find({})
-        .sort('nombre')
+        .sort('fechacrea')
         .populate('usuariocrea usuariomodifica', 'nombre correo', Usuario)
         .exec((err, data) => {
             if (err) {
